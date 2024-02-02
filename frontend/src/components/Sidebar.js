@@ -217,6 +217,14 @@ function SetUp({
 function Results({ sideBar, setResults, results, setGoals, goals, setResultFocused, resultFocused }) {
     const { theme } = useTheme();
 
+    useEffect(() => {
+        console.log("results", results);
+        console.log("results.length", results.length);
+        if (results.length > 0) {
+            setResultFocused(0);
+        }
+    }, [results]);
+
     // only shows if sideBar is true and results is not empty
     return (
         <div
@@ -282,7 +290,6 @@ function Results({ sideBar, setResults, results, setGoals, goals, setResultFocus
                                 border: resultFocused === index ? "3px solid" : "",
                             }}
                         >
-                            {console.log("ewhuidiuhdew",  resultFocused === index, resultFocused, index)}
                             <div className="ResultRow">
                                 <h2>{`Word ${index + 1}: ${goals[index]}`}</h2>
                                 <div className="AttemptOutput">
@@ -312,6 +319,7 @@ export default function Sidebar({ sideBar, setSideBar, setResultFocused, results
             setWords={setWords}
             results={results}
             setResults={setResults}
+            setResultFocused={setResultFocused}
             goals={goals}
             setGoals={setGoals}
         />

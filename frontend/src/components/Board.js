@@ -44,11 +44,32 @@ export default function Board({
         });
     }, [guesses, step, resultFocused]);
 
+    useEffect(() => {
+        function handleKeyPress(event) {
+            // Check if the right arrow key was pressed
+            if ((event.key === 'ArrowRight' || event.key === 'ArrowDown') && resultFocused !== null && resultFocused + 1 < results.length) {
+                // Increment resultFocused by 1
+                setResultFocused(prevResultFocused => prevResultFocused + 1);
+            }
+            else if ((event.key === 'ArrowLeft' || event.key === 'ArrowUp') && resultFocused !== null && resultFocused - 1 >= 0) {
+                // Decrement resultFocused by 1
+                setResultFocused(prevResultFocused => prevResultFocused - 1);
+            }
+        }
+    
+        // Add the event listener
+        window.addEventListener('keydown', handleKeyPress);
+    
+        // Clean up the event listener on unmount
+        return () => {
+            window.removeEventListener('keydown', handleKeyPress);
+        };
+    }, [resultFocused, setResultFocused]);
+
     // also displays controls for sidebar results if resultFocused is not null
     return (
         <div className= "EntireBoard">
             <div className="Board">
-                {console.log("list", list)}
                 {list.map((word, wordIndex) => (
                     <div key={wordIndex} className="Row">
                         {word.guess.split("").map((letter, letterIndex) => (
