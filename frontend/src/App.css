@@ -1,0 +1,23 @@
+.App {
+  height: 100vh;
+}
+
+.Main {
+  display: flex;
+  justify-content: center;
+}
+
+.Content {
+  display: grid;
+  justify-content: center;
+  align-content: center;
+}
+
+.Content > * {
+  display: flex;
+  justify-content: center;
+}
+
+button:hover {
+  cursor: pointer;
+}

@@ -1,0 +1,46 @@
+.EntireBoard {
+    display: flex;
+    flex-direction: column;
+}
+
+.Board {
+    display: grid;
+    grid-gap: 4px;
+    width: 280px;
+    height: 504px;
+    padding-top: 10px;
+    grid-auto-rows: 1fr;
+    margin-bottom: 10px;
+}
+
+.Row {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    grid-gap: 4px;
+}
+
+.Letter {
+    color: white;
+    border: 2px solid rgb(86, 86, 86);
+    border-radius: 1px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 30px;
+    font-family: 'Noto Serif', serif;
+}
+
+.ResultsControls {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin: 5px 0;
+}
+
+.ResultsControls > button {
+    width: 85px;
+}
+
+.StopResults {
+    font-size: 20px;
+}
