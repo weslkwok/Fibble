@@ -36,7 +36,10 @@ export default function Board({
                     guess: "     ",
                     correct: [],
                     almost: [],
+                    wrong: [],
                     lie: null,
+                    expected_entropy: null,
+                    actual_entropy: null
                 });
             }
 
