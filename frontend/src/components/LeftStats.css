@@ -1,0 +1,28 @@
+.StatsTitles {
+    display: grid;
+    grid-template-columns: repeat(2, 1.5fr);
+    grid-gap: 4px;
+}
+
+.Stats {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    height: 100%;
+}
+
+.StatsRow {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    grid-gap: 4px;
+}
+
+.StatsContent {
+    display: grid;
+    grid-gap: 4px;
+    width: 300px;
+    height: 540px;
+    padding-top: 10px;
+    grid-auto-rows: 1fr;
+    margin-bottom: 10px;
+}

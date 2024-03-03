@@ -1,4 +1,6 @@
 import "./Board.css";
+import LeftStats from "./LeftStats";
+import RightStats from "./RightStats";
 import { useState, useEffect } from "react";
 import { useTheme } from "./ThemeContext";
 import { FaChevronRight } from "react-icons/fa";
@@ -28,7 +30,7 @@ export default function Board({
         } else {
             newList = results[resultFocused];
         }
-        
+
         // list needs to be padded with empty spaces to be 9 words long
         setList((prevList) => {
             while (newList.length < 9) {
@@ -39,7 +41,7 @@ export default function Board({
                     wrong: [],
                     lie: null,
                     expected_entropy: null,
-                    actual_entropy: null
+                    actual_entropy: null,
                 });
             }
 
@@ -50,104 +52,154 @@ export default function Board({
     useEffect(() => {
         function handleKeyPress(event) {
             // Check if the right arrow key was pressed
-            if ((event.key === 'ArrowRight' || event.key === 'ArrowDown') && resultFocused !== null && resultFocused + 1 < results.length) {
+            if (
+                (event.key === "ArrowRight" || event.key === "ArrowDown") &&
+                resultFocused !== null &&
+                resultFocused + 1 < results.length
+            ) {
                 // Increment resultFocused by 1
-                setResultFocused(prevResultFocused => prevResultFocused + 1);
-            }
-            else if ((event.key === 'ArrowLeft' || event.key === 'ArrowUp') && resultFocused !== null && resultFocused - 1 >= 0) {
+                setResultFocused((prevResultFocused) => prevResultFocused + 1);
+            } else if (
+                (event.key === "ArrowLeft" || event.key === "ArrowUp") &&
+                resultFocused !== null &&
+                resultFocused - 1 >= 0
+            ) {
                 // Decrement resultFocused by 1
-                setResultFocused(prevResultFocused => prevResultFocused - 1);
+                setResultFocused((prevResultFocused) => prevResultFocused - 1);
             }
         }
-    
+
         // Add the event listener
-        window.addEventListener('keydown', handleKeyPress);
-    
+        window.addEventListener("keydown", handleKeyPress);
+
         // Clean up the event listener on unmount
         return () => {
-            window.removeEventListener('keydown', handleKeyPress);
+            window.removeEventListener("keydown", handleKeyPress);
         };
     }, [resultFocused, setResultFocused]);
 
     // also displays controls for sidebar results if resultFocused is not null
     return (
-        <div className= "EntireBoard">
-            <div className="Board">
-                {list.map((word, wordIndex) => (
-                    <div key={wordIndex} className="Row">
-                        {word.guess.split("").map((letter, letterIndex) => (
-                            <div
-                                key={letterIndex}
-                                className="Letter"
-                                style={{
-                                    color: theme.text,
-                                    backgroundColor: word.correct.includes(
-                                        letterIndex
-                                    )
-                                        ? "rgb(54, 153, 72)"
-                                        : word.almost.includes(letterIndex)
-                                        ? "rgb(190, 190, 16)"
-                                        : "transparent",
-                                    border:
-                                        word.lie === letterIndex
-                                            ? "3px solid red"
-                                            : "2px solid rgb(86, 86, 86)",
-                                }}
-                            >
-                                {letter}
-                            </div>
-                        ))}
+        <div className="EntireBody">
+            <LeftStats list={list} />
+            <div className="EntireBoard">
+                <div className="Board">
+                    <div className="TitleRow">
+                        <div
+                            className="Letter Title"
+                            style={{
+                                color: theme.text,
+                            }}
+                        >
+                            Guess
+                        </div>
+                        <div
+                            className="Letter Title"
+                            style={{
+                                color: theme.text,
+                            }}
+                        >
+                            Actual
+                        </div>
+                        <div
+                            className="Letter Title"
+                            style={{
+                                color: theme.text,
+                            }}
+                        >
+                            Expected
+                        </div>
                     </div>
-                ))}
-            </div>
-            {resultFocused != null && (
-                <div className="ResultsControls">
-                    <button
-                        className="Run"
-                        style={{
-                            backgroundColor: theme.backgroundSecondary,
-                            color: theme.text,
-                        }}
-                        onClick={(prevResultFocused) => {
-                            setResultFocused((prevResultFocused) => {
-                                return prevResultFocused - 1 >= 0
-                                    ? prevResultFocused - 1
-                                    : prevResultFocused;
-                            });
-                        }}
-                    >
-                        <FaChevronLeft />
-                    </button>
-                    <button
-                        className="Stop StopResults"
-                        style={{
-                            backgroundColor: theme.backgroundSecondary,
-                            color: theme.text,
-                        }}
-                        onClick={() => {
-                            setResultFocused(null);
-                        }}
-                    >
-                        <HiMiniXMark />
-                    </button>
-                    <button
-                        className="Run"
-                        style={{
-                            backgroundColor: theme.backgroundSecondary,
-                            color: theme.text,
-                        }}
-                        onClick={() => {
-                            setResultFocused((prevResultFocused) => {
-                                return prevResultFocused + 1 < results.length
-                                    ? prevResultFocused + 1
-                                    : prevResultFocused;
-                            });
-                        }}
-                    >
-                        <FaChevronRight />
-                    </button>
+                    {list.map((word, wordIndex) => (
+                        <div key={wordIndex} className="Row">
+                            {word.guess.split("").map((letter, letterIndex) => (
+                                <div
+                                    key={letterIndex}
+                                    className="Letter"
+                                    style={{
+                                        color: theme.text,
+                                        backgroundColor: word.correct.includes(
+                                            letterIndex
+                                        )
+                                            ? "rgb(54, 153, 72)"
+                                            : word.almost.includes(letterIndex)
+                                            ? "rgb(190, 190, 16)"
+                                            : "transparent",
+                                        border:
+                                            word.lie === letterIndex
+                                                ? "3px solid red"
+                                                : "2px solid rgb(86, 86, 86)",
+                                    }}
+                                >
+                                    {letter}
+                                </div>
+                            ))}
+                            <div className="Actual Bits Letter">
+                                {word.actual_entropy !== null ? (
+                                    <div>{word.actual_entropy.toFixed(2)}</div>
+                                ) : null}
+                            </div>
+                            <div className="Expected Bits Letter">
+                                {word.expected_entropy !== null ? (
+                                    <div>
+                                        {word.expected_entropy.toFixed(2)}
+                                    </div>
+                                ) : null}
+                            </div>
+                        </div>
+                    ))}
                 </div>
-            )}
+                {resultFocused != null && (
+                    <div className="ResultsControls">
+                        <button
+                            className="Run"
+                            style={{
+                                backgroundColor: theme.backgroundSecondary,
+                                color: theme.text,
+                            }}
+                            onClick={(prevResultFocused) => {
+                                setResultFocused((prevResultFocused) => {
+                                    return prevResultFocused - 1 >= 0
+                                        ? prevResultFocused - 1
+                                        : prevResultFocused;
+                                });
+                            }}
+                        >
+                            <FaChevronLeft />
+                        </button>
+                        <button
+                            className="Stop StopResults"
+                            style={{
+                                backgroundColor: theme.backgroundSecondary,
+                                color: theme.text,
+                            }}
+                            onClick={() => {
+                                setResultFocused(null);
+                            }}
+                        >
+                            <HiMiniXMark />
+                        </button>
+                        <button
+                            className="Run"
+                            style={{
+                                backgroundColor: theme.backgroundSecondary,
+                                color: theme.text,
+                            }}
+                            onClick={() => {
+                                setResultFocused((prevResultFocused) => {
+                                    return prevResultFocused + 1 <
+                                        results.length
+                                        ? prevResultFocused + 1
+                                        : prevResultFocused;
+                                });
+                            }}
+                        >
+                            <FaChevronRight />
+                        </button>
+                    </div>
+                )}
+            </div>
+            <RightStats list={list} step={step} resultFocused={resultFocused}/>
         </div>
     );
 }

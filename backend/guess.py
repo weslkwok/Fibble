@@ -15,6 +15,9 @@ class GuessData:
         self.lie = lie
         self.expected_entropy = None
         self.actual_entropy = None
+        self.possibilities = None
+        self.uncertainty = None
+        self.guesses_to_expected_entropy = None
     
     def to_dict(self):
         return {
@@ -24,7 +27,10 @@ class GuessData:
             'wrong': list(self.wrong),
             'lie': self.lie,
             'expected_entropy': self.expected_entropy,
-            'actual_entropy': self.actual_entropy
+            'actual_entropy': self.actual_entropy,
+            'possibilities': self.possibilities,
+            'uncertainty': self.uncertainty,
+            'guesses_to_expected_entropy': self.guesses_to_expected_entropy
         }
     
     def to_tuple(self):
@@ -41,7 +47,7 @@ WORD_FREQ_FILE = os.path.join(DATA_DIR, "wordle_words_freqs_full.txt")
 WORD_FREQ_MAP_FILE = os.path.join(DATA_DIR, "freq_map.json")
 
 # generate guesses for a goal until goal found or 9 guesses made  
-def generate_guesses(goal: str):
+def generate_guesses(goal: str, fibble: bool = True):
     guesses = []
     goal = goal.lower()
     possible_ans = get_word_list(False)
@@ -49,15 +55,18 @@ def generate_guesses(goal: str):
     uncertainty = calculate_entropy(1 / len(possible_ans))
     
     # generate guesses until goal found or 9 guesses made
-    for i in range(6):
+    for i in range(9):
         if i == 0:
             # determined by 3Blue1Brown to be the best first guess
-            guess, expected_entropy = "slane", 0.0
+            guess, expected_entropy, guesses_to_expected_entropy = "slane", 0.0, {"slane": 0.0}
         else:
-            guess, expected_entropy = generate_guess(goal, possible_ans, allowed_guesses)
+            guess, expected_entropy, guesses_to_expected_entropy = generate_guess(goal, possible_ans, allowed_guesses)
         
-        guessData = judge_guess(guess, goal, False)
+        guessData = judge_guess(guess, goal, fibble)
+        guessData.uncertainty = round(uncertainty, 2)
         guessData.expected_entropy = expected_entropy
+        guessData.guesses_to_expected_entropy = guesses_to_expected_entropy
+        guessData.possibilities = len(possible_ans)
         
         if len(guessData.correct) == 5:
             # uncertainty is now 0 since an answer has been found so the actual entropy is the previos uncertainty
@@ -72,8 +81,9 @@ def generate_guesses(goal: str):
         
         actual_entropy = uncertainty - calculate_entropy(1 / len(possible_ans))
         uncertainty -= actual_entropy
-        guessData.actual_entropy = actual_entropy
         guesses.append(guessData)
+        
+        guessData.actual_entropy = actual_entropy
         
         print(guessData.to_dict())
         
@@ -110,7 +120,7 @@ def generate_guess(goal: str, possible_ans: set, allowed_guesses: set):
     
     # return the guess with the highest expected entropy
     best_guess = max(allowed_guesses_to_expected_entropy, key=allowed_guesses_to_expected_entropy.get)
-    return best_guess, allowed_guesses_to_expected_entropy[best_guess]
+    return best_guess, allowed_guesses_to_expected_entropy[best_guess], allowed_guesses_to_expected_entropy
         
 
 # generate new possible answers from a guess, goal, and previous possible answers
@@ -235,4 +245,4 @@ def get_word_frequencies():
     return result                                    
 
 words_map = map_to_words(get_word_list(False))
-generate_guesses("TRACE")   
+# generate_guesses("TRACE")   

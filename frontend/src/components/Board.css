@@ -1,21 +1,34 @@
+.EntireBody {
+    display: grid;
+    grid-template-columns: 1fr 2fr 1fr;
+}
+
 .EntireBoard {
     display: flex;
     flex-direction: column;
+    align-items: center;
+    height: 100%;
 }
 
 .Board {
     display: grid;
     grid-gap: 4px;
-    width: 280px;
-    height: 504px;
+    width: 430px;
+    height: 540px;
     padding-top: 10px;
     grid-auto-rows: 1fr;
     margin-bottom: 10px;
 }
 
+.TitleRow {
+    display: grid;
+    grid-template-columns: 5.35fr repeat(2, 1.5fr);
+    grid-gap: 4px;
+}
+
 .Row {
     display: grid;
-    grid-template-columns: repeat(5, 1fr);
+    grid-template-columns: repeat(5, 1fr) repeat(2, 1.5fr);
     grid-gap: 4px;
 }
 
@@ -27,7 +40,21 @@
     align-items: center;
     justify-content: center;
     font-size: 30px;
-    font-family: 'Noto Serif', serif;
+    font-family: "Noto Serif", serif;
+}
+
+.Actual {
+    color: rgb(0, 164, 5);
+    font-size: 28px;
+}
+
+.Expected {
+    color: rgb(170, 0, 0);
+    font-size: 28px;
+}
+
+.Title {
+    font-size: 13px;
 }
 
 .ResultsControls {

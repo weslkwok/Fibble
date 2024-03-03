@@ -2,7 +2,7 @@
     display: block;
 }
 
-.ControlsRow{
+.ControlsRow {
     display: flex;
     color: white;
     justify-content: center;
@@ -18,10 +18,11 @@ input {
     border-radius: 3px;
     background-color: #ffffff;
     margin: 0 10px;
-    font-family: 'Noto Serif', serif;
+    font-family: "Noto Serif", serif;
 }
 
-.Random, .Submit {
+.Random,
+.Submit {
     border-radius: 5px;
     display: flex;
     align-items: center;
@@ -29,7 +30,7 @@ input {
     font-size: 18px;
     background-color: rgb(50, 50, 50);
     height: 37px;
-    font-family: 'Noto Serif', serif;
+    font-family: "Noto Serif", serif;
 }
 
 .Random {
@@ -41,9 +42,13 @@ input {
     width: 20px;
 }
 
-.Run, .Reset, .In, .Out, .Stop {
+.Run,
+.Reset,
+.In,
+.Out,
+.Stop {
     margin: 0 4px;
     height: 37px;
-    width: 50px;
+    width: 79px;
     border-radius: 8px;
 }

@@ -12,7 +12,7 @@ function MainPage() {
     // ex: "Hello"
     const[goal, setGoal] = useState("");
 
-    // guesses is the array of guesses for goal for the main board
+    // guesses is the array of results for goal for the main board
     // ex: [{guess: "Hello", correct: [0, 1, 4], almost: [3], lie: 3}, ...]
     const[guesses, setGuesses] = useState([]);
 
@@ -29,18 +29,21 @@ function MainPage() {
     // results is the array of results for goals in the sidebar
     const [results, setResults] = useState([]);
 
+    // fibble stores whether we are playing fibble or wordle
+    const [fibble, setFibble] = useState(false);
+
     const { theme } = useTheme();
 
     return (
         <div className="App" style={{ backgroundColor: theme.background }}>
-            <Header setSideBar={setSideBar}/>
+            <Header setSideBar={setSideBar} setFibble={setFibble} fibble={fibble}/>
             <div className="Main">
-                <Sidebar sideBar={sideBar} setSideBar={setSideBar} setResultFocused={setResultFocused} results={results} setResults={setResults} resultFocused = {resultFocused}/>
+                <Sidebar sideBar={sideBar} setSideBar={setSideBar} setResultFocused={setResultFocused} results={results} setResults={setResults} resultFocused = {resultFocused} fibble={fibble}/>
                 <div className="Content">
                     <div className="ContentBoard">
                         <Board guesses={guesses} setGuesses={setGuesses} step={step} resultFocused={resultFocused} results={results} setResultFocused={setResultFocused} />
                     </div>
-                    {resultFocused === null ? <Controls setGoal={setGoal} setStep={setStep} step={step} guesses={guesses} setGuesses={setGuesses} goal={goal}/> : null}
+                    {resultFocused === null ? <Controls setGoal={setGoal} setStep={setStep} step={step} guesses={guesses} setGuesses={setGuesses} goal={goal} fibble={fibble}/> : null}
                 </div>
             </div>
         </div>

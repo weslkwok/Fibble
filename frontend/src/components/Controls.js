@@ -16,6 +16,7 @@ export default function Controls({
     guesses,
     setGuesses,
     goal,
+    fibble,
 }) {
     // text is the inputted word for the main board (not the goal)
     // goal is set to text when the submit button is clicked
@@ -45,7 +46,7 @@ export default function Controls({
             headers: {
                 "Content-Type": "application/json",
             },
-            body: JSON.stringify({ goals: [goal] }),
+            body: JSON.stringify({ goals: [goal], fibble: fibble }),
         })
             .then((response) => response.json())
             .then((data) => {

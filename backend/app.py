@@ -15,8 +15,8 @@ def get_guesses():
     rounds = []
     
     for goal in request.json['goals']:
-        print(goal)
-        rounds.append([guess.to_dict() for guess in generate_guesses(goal)])
+        print(request.json)
+        rounds.append([guess.to_dict() for guess in generate_guesses(goal, request.json['fibble'])])
         
     return jsonify(rounds)
 

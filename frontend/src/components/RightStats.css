@@ -1,0 +1,56 @@
+.RightStatsTitles {
+    display: grid;
+    grid-template-columns: 1fr 1.5fr;
+    grid-gap: 4px;
+    height: 51px;
+}
+
+.RightStats {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    height: 100%;
+}
+
+.RightStatsContent {
+    display: grid;
+    grid-gap: 4px;
+    width: 200px;
+    height: 540px;
+    padding-top: 10px;
+    grid-auto-rows: 1fr;
+    margin-bottom: 10px;
+}
+
+.RightStatsRow {
+    display: grid;
+    grid-template-columns: 1fr 1.5fr;
+    grid-gap: 4px;
+    font-size: 30px;
+}
+
+.RightStatsContent {
+    display: grid;
+    grid-gap: 4px;
+    width: 200px;
+    height: 540px;
+}
+
+.RightStatsRows {
+    overflow: auto;
+    height: 490px;
+}
+
+.RightStatsGuesses {
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 15px;
+    font-family: "Noto Serif", serif;
+}
+
+.First {
+    border: 1px solid rgb(0, 133, 53);
+    border-radius: 1px;
+}

@@ -8,14 +8,7 @@ import { FaPlus } from "react-icons/fa";
 import { FaMinus } from "react-icons/fa";
 import wordsData from "../assets/words.json";
 
-function SetUp({
-    sideBar,
-    words,
-    setWords,
-    setResults,
-    goals,
-    setGoals
-}) {
+function SetUp({ sideBar, words, setWords, setResults, goals, setGoals, fibble }) {
     // Errors is the array of indices of words that are invalid
     const [Errors, setErrors] = useState([]);
     const { theme } = useTheme();
@@ -36,7 +29,7 @@ function SetUp({
             headers: {
                 "Content-Type": "application/json",
             },
-            body: JSON.stringify({ goals: goals }),
+            body: JSON.stringify({ fibble: fibble, goals: goals }),
         })
             .then((response) => response.json())
             .then((data) => {
@@ -214,7 +207,15 @@ function SetUp({
     );
 }
 
-function Results({ sideBar, setResults, results, setGoals, goals, setResultFocused, resultFocused }) {
+function Results({
+    sideBar,
+    setResults,
+    results,
+    setGoals,
+    goals,
+    setResultFocused,
+    resultFocused,
+}) {
     const { theme } = useTheme();
 
     useEffect(() => {
@@ -271,29 +272,31 @@ function Results({ sideBar, setResults, results, setGoals, goals, setResultFocus
                         (sum, guess) => sum + guess.almost.length,
                         0
                     );
+                    let resultLen = result.filter(
+                        (result) => result.guess !== "     "
+                    ).length;
+
                     return (
                         <div
                             key={index}
                             className="Attempt"
-                            onClick={
-                                () => {
-                                    setResultFocused(index);
-                                }
-                            }
+                            onClick={() => {
+                                setResultFocused(index);
+                            }}
                             style={{
                                 backgroundColor:
-                                    result[result.length - 1].correct.length ===
-                                    5
+                                    result[resultLen - 1].correct.length === 5
                                         ? "rgb(54, 153, 72)"
                                         : "rgb(190, 190, 16)",
                                 color: theme.text,
-                                border: resultFocused === index ? "3px solid" : "",
+                                border:
+                                    resultFocused === index ? "3px solid" : "",
                             }}
                         >
                             <div className="ResultRow">
                                 <h2>{`Word ${index + 1}: ${goals[index]}`}</h2>
                                 <div className="AttemptOutput">
-                                    <p>{`Guesses: ${result.length}`}</p>
+                                    <p>{`Guesses: ${resultLen}`}</p>
                                     <p>{`Correct: ${green}`}</p>
                                     <p>{`Almost: ${yellow}`}</p>
                                 </div>
@@ -306,7 +309,15 @@ function Results({ sideBar, setResults, results, setGoals, goals, setResultFocus
     );
 }
 
-export default function Sidebar({ sideBar, setSideBar, setResultFocused, results, setResults, resultFocused }) {
+export default function Sidebar({
+    sideBar,
+    setSideBar,
+    setResultFocused,
+    results,
+    setResults,
+    resultFocused,
+    fibble,
+}) {
     // words is the array of input words for the sidebar
     const [words, setWords] = useState([""]);
     // goals is updated to be words once the run button is clicked
@@ -322,6 +333,7 @@ export default function Sidebar({ sideBar, setSideBar, setResultFocused, results
             setResultFocused={setResultFocused}
             goals={goals}
             setGoals={setGoals}
+            fibble={fibble}
         />
     ) : (
         <Results
@@ -331,7 +343,7 @@ export default function Sidebar({ sideBar, setSideBar, setResultFocused, results
             goals={goals}
             setGoals={setGoals}
             setResultFocused={setResultFocused}
-            resultFocused = {resultFocused}
+            resultFocused={resultFocused}
         />
     );
 }
