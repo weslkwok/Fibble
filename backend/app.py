@@ -3,7 +3,8 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS
 import random
 
-from guess import generate_guesses
+from fibble import generate_guesses_fibble
+from wordle import generate_guesses_wordle
 
 app = Flask(__name__)
 CORS(app)
@@ -13,10 +14,13 @@ CORS(app)
 @app.route('/guess', methods=['POST'])
 def get_guesses():
     rounds = []
-    
-    for goal in request.json['goals']:
-        print(request.json)
-        rounds.append([guess.to_dict() for guess in generate_guesses(goal, request.json['fibble'])])
+    if not request.json['fibble']:
+        for goal in request.json['goals']:
+            rounds.append([guess.to_dict() for guess in generate_guesses_wordle(goal, request.json['fibble'])])
+    else:
+        for goal in request.json['goals']:
+            print(request.json)
+            rounds.append([guess.to_dict() for guess in generate_guesses_fibble(goal, request.json['fibble'])])
         
     return jsonify(rounds)
 

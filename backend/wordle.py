@@ -47,7 +47,7 @@ WORD_FREQ_FILE = os.path.join(DATA_DIR, "wordle_words_freqs_full.txt")
 WORD_FREQ_MAP_FILE = os.path.join(DATA_DIR, "freq_map.json")
 
 # generate guesses for a goal until goal found or 9 guesses made  
-def generate_guesses(goal: str, fibble: bool = True):
+def generate_guesses_wordle(goal: str, fibble: bool = True):
     guesses = []
     goal = goal.lower()
     possible_ans = get_word_list(False)
@@ -60,7 +60,7 @@ def generate_guesses(goal: str, fibble: bool = True):
             # determined by 3Blue1Brown to be the best first guess
             guess, expected_entropy, guesses_to_expected_entropy = "slane", 0.0, {"slane": 0.0}
         else:
-            guess, expected_entropy, guesses_to_expected_entropy = generate_guess(goal, possible_ans, allowed_guesses)
+            guess, expected_entropy, guesses_to_expected_entropy = generate_guess_wordle(goal, possible_ans, allowed_guesses)
         
         # find out how the guess actually did
         guessData = judge_guess(guess, goal, fibble)
@@ -79,7 +79,6 @@ def generate_guesses(goal: str, fibble: bool = True):
             return guesses
         
         # generate new possible answers
-        # print(possible_ans)
         possible_ans = generate_possible_answers(guessData, possible_ans)
         
         actual_entropy = uncertainty - calculate_entropy(1 / len(possible_ans))
@@ -92,7 +91,7 @@ def generate_guesses(goal: str, fibble: bool = True):
         
     return guesses
 
-def generate_guess(goal: str, possible_ans: set, allowed_guesses: set):
+def generate_guess_wordle(goal: str, possible_ans: set, allowed_guesses: set):
     allowed_guesses_to_expected_entropy = {}
     # iterate through all possible guesses
     for guess in possible_ans:
@@ -115,12 +114,9 @@ def generate_guess(goal: str, possible_ans: set, allowed_guesses: set):
             entropy = calculate_entropy(probablity)
             # entropy of each pattern is weighted by the probability of that pattern occuring
             patterns_to_weighted_entropy[pattern] = probablity * entropy
-
-        #print(guess, patterns_to_expected_entropy)
         
         # add up all the weighted entropies to get the expected entropy of the guess
         allowed_guesses_to_expected_entropy[guess] = sum(patterns_to_weighted_entropy.values())
-        # print(guess, allowed_guesses_to_average_expected_entropy[guess])
     
     # return the guess with the highest expected entropy
     best_guess = max(allowed_guesses_to_expected_entropy, key=allowed_guesses_to_expected_entropy.get)

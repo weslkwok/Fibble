@@ -34,7 +34,10 @@ class GuessData:
         }
     
     def to_tuple(self):
-        return (frozenset(self.correct), frozenset(self.almost))
+        return (frozenset(self.correct), frozenset(self.almost), frozenset(self.wrong))
+    
+    def copy(self):
+        return GuessData(self.guess, self.correct.copy(), self.almost.copy(), self.wrong.copy(), self.lie)
 
 # gets the file paths for the data files
 DATA_DIR = os.path.join(
@@ -47,12 +50,13 @@ WORD_FREQ_FILE = os.path.join(DATA_DIR, "wordle_words_freqs_full.txt")
 WORD_FREQ_MAP_FILE = os.path.join(DATA_DIR, "freq_map.json")
 
 # generate guesses for a goal until goal found or 9 guesses made  
-def generate_guesses(goal: str, fibble: bool = True):
+def generate_guesses_fibble(goal: str, fibble: bool = True):
     guesses = []
     goal = goal.lower()
     possible_ans = get_word_list(False)
     allowed_guesses = get_word_list(True)
     uncertainty = calculate_entropy(1 / len(possible_ans))
+    guessData = None
     
     # generate guesses until goal found or 9 guesses made
     for i in range(9):
@@ -60,71 +64,139 @@ def generate_guesses(goal: str, fibble: bool = True):
             # determined by 3Blue1Brown to be the best first guess
             guess, expected_entropy, guesses_to_expected_entropy = "slane", 0.0, {"slane": 0.0}
         else:
-            guess, expected_entropy, guesses_to_expected_entropy = generate_guess(goal, possible_ans, allowed_guesses)
+            guess, expected_entropy, guesses_to_expected_entropy = generate_guess(guessData, possible_ans, allowed_guesses)
         
         # find out how the guess actually did
         guessData = judge_guess(guess, goal, fibble)
         
+        # update the guess data
         guessData.uncertainty = round(uncertainty, 2)
         guessData.expected_entropy = expected_entropy
         guessData.guesses_to_expected_entropy = guesses_to_expected_entropy
         guessData.possibilities = len(possible_ans)
         
         # check if the goal has been found
-        if len(guessData.correct) == 5:
+        if len(guessData.correct.difference({guessData.lie})) == 5:
             # uncertainty is now 0 since an answer has been found so the actual entropy is the previos uncertainty
             guessData.actual_entropy = uncertainty
             guesses.append(guessData)
             print(guessData.to_dict())
             return guesses
         
-        # generate new possible answers
-        # print(possible_ans)
-        possible_ans = generate_possible_answers(guessData, possible_ans)
-        
+        # update the possible answers
+        if i != 0:
+            possible_ans = set(guesses_to_expected_entropy.keys())
+        else: # for the first guess we didnt calculate the expected entropy, so we need to update the possible answers manually
+            new_possible_ans = set()
+            # iterate through all possible lie patterns and union their possible answers
+            for pattern in generate_lies(guessData):
+                guessDataLie = GuessData(guessData.guess, pattern[0], pattern[1], pattern[2], None)
+                possible_ans_for_lie = generate_possible_answers(guessDataLie, possible_ans)
+                new_possible_ans = new_possible_ans.union(possible_ans_for_lie)
+            possible_ans = new_possible_ans
+                
+        # update more variables
         actual_entropy = uncertainty - calculate_entropy(1 / len(possible_ans))
         uncertainty -= actual_entropy
         guesses.append(guessData)
-        
         guessData.actual_entropy = actual_entropy
-        
-        print(guessData.to_dict())
         
     return guesses
 
-def generate_guess(goal: str, possible_ans: set, allowed_guesses: set):
-    allowed_guesses_to_expected_entropy = {}
-    # iterate through all possible guesses
-    for guess in possible_ans:
-        # iterate through all possible answers and add them to their corresponding pattern
-        patterns_to_ans = {}
-        for ans in possible_ans:
-            ansData = judge_guess(guess, ans, False)
-            
-            ansDataTuple = ansData.to_tuple()
-
-            if ansDataTuple in patterns_to_ans:
-                patterns_to_ans[ansDataTuple].add(ans)
-            else:
-                patterns_to_ans[ansDataTuple] = set([ans])
+def generate_lies(guessData: GuessData):
+    lies = []
+    # loop through all the correct letters and generate possible patterns
+    for i in guessData.correct:
+        copy1 = guessData.copy()
+        copy1.correct.remove(i)
+        copy1.almost.add(i)
+        lies.append(copy1.to_tuple())
         
-        # calculate the weighted entropy of each pattern
-        patterns_to_weighted_entropy = {}
-        for pattern, ans in patterns_to_ans.items():
-            probablity = len(ans) / len(possible_ans)
-            entropy = calculate_entropy(probablity)
-            # entropy of each pattern is weighted by the probability of that pattern occuring
-            patterns_to_weighted_entropy[pattern] = probablity * entropy
-
-        #print(guess, patterns_to_expected_entropy)
-        
-        # add up all the weighted entropies to get the expected entropy of the guess
-        allowed_guesses_to_expected_entropy[guess] = sum(patterns_to_weighted_entropy.values())
-        # print(guess, allowed_guesses_to_average_expected_entropy[guess])
+        copy2 = guessData.copy()
+        copy2.correct.remove(i)
+        copy2.wrong.add(i)
+        lies.append(copy2.to_tuple())
     
+    # loop through all the almost letters and generate possible patterns
+    for i in guessData.almost:
+        copy1 = guessData.copy()
+        copy1.almost.remove(i)
+        copy1.correct.add(i)
+        lies.append(copy1.to_tuple())
+        
+        copy2 = guessData.copy()
+        copy2.almost.remove(i)
+        copy2.wrong.add(i)
+        lies.append(copy2.to_tuple())
+    
+    # loop through all the wrong letters and generate possible patterns
+    for i in guessData.wrong:
+        copy1 = guessData.copy()
+        copy1.wrong.remove(i)
+        copy1.correct.add(i)
+        lies.append(copy1.to_tuple())
+        
+        copy2 = guessData.copy()
+        copy2.wrong.remove(i)
+        copy2.almost.add(i)
+        lies.append(copy2.to_tuple())
+    
+    return lies
+
+def generate_guess(guessData: GuessData, possible_ans: set, allowed_guesses: set):
+    allowed_guesses_to_avg_expected_entropy = {}
+    
+    # iterate through all possible patterns
+    for pattern in generate_lies(guessData):
+        guessDataLie = GuessData(guessData.guess, pattern[0], pattern[1], pattern[2], None)
+        
+        # generate possible answers given that pattern
+        possible_ans_for_lie = generate_possible_answers(guessDataLie, possible_ans)
+        
+        allowed_guesses_to_expected_entropy_for_lie = {}
+        # iterate through all possible guesses
+        for guess in possible_ans_for_lie:
+            # iterate through all possible answers and add them to their corresponding pattern
+            patterns_to_ans = {}
+            for ans in possible_ans_for_lie:
+                ansData = judge_guess(guess, ans, False)
+                
+                ansDataTuple = ansData.to_tuple()
+
+                if ansDataTuple in patterns_to_ans:
+                    patterns_to_ans[ansDataTuple].add(ans)
+                else:
+                    patterns_to_ans[ansDataTuple] = set([ans])
+            
+            # calculate the weighted entropy of each pattern
+            patterns_to_weighted_entropy = {}
+            for pattern, ans in patterns_to_ans.items():
+                probablity = len(ans) / len(possible_ans_for_lie)
+                entropy = calculate_entropy(probablity)
+                # entropy of each pattern is weighted by the probability of that pattern occuring
+                patterns_to_weighted_entropy[pattern] = probablity * entropy
+            
+            # add up all the weighted entropies to get the expected entropy of the guess
+            allowed_guesses_to_expected_entropy_for_lie[guess] = sum(patterns_to_weighted_entropy.values())
+        
+        # Create a set of all keys from both dictionaries
+        all_keys = set(list(allowed_guesses_to_avg_expected_entropy.keys()) + list(allowed_guesses_to_expected_entropy_for_lie.keys()))
+        
+        # Create a new dictionary with the average values
+        avg_dict = {}
+        for key in all_keys:
+            if key in allowed_guesses_to_avg_expected_entropy and key in allowed_guesses_to_expected_entropy_for_lie:
+                avg_dict[key] = (allowed_guesses_to_avg_expected_entropy[key] + allowed_guesses_to_expected_entropy_for_lie[key]) / 2
+            elif key in allowed_guesses_to_avg_expected_entropy:
+                avg_dict[key] = allowed_guesses_to_avg_expected_entropy[key]
+            else:
+                avg_dict[key] = allowed_guesses_to_expected_entropy_for_lie[key]
+                
+        allowed_guesses_to_avg_expected_entropy = avg_dict
+        
     # return the guess with the highest expected entropy
-    best_guess = max(allowed_guesses_to_expected_entropy, key=allowed_guesses_to_expected_entropy.get)
-    return best_guess, allowed_guesses_to_expected_entropy[best_guess], allowed_guesses_to_expected_entropy
+    best_guess = max(allowed_guesses_to_avg_expected_entropy, key=allowed_guesses_to_avg_expected_entropy.get)
+    return best_guess, allowed_guesses_to_avg_expected_entropy[best_guess], allowed_guesses_to_avg_expected_entropy
         
 
 # generate new possible answers from a guess, goal, and previous possible answers
@@ -249,4 +321,4 @@ def get_word_frequencies():
     return result                                    
 
 words_map = map_to_words(get_word_list(False))
-# generate_guesses("TRACE")   
+# print(data.to_dict() for data in generate_guesses("TRACE", True))   
