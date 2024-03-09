@@ -62,12 +62,15 @@ def generate_guesses(goal: str, fibble: bool = True):
         else:
             guess, expected_entropy, guesses_to_expected_entropy = generate_guess(goal, possible_ans, allowed_guesses)
         
+        # find out how the guess actually did
         guessData = judge_guess(guess, goal, fibble)
+        
         guessData.uncertainty = round(uncertainty, 2)
         guessData.expected_entropy = expected_entropy
         guessData.guesses_to_expected_entropy = guesses_to_expected_entropy
         guessData.possibilities = len(possible_ans)
         
+        # check if the goal has been found
         if len(guessData.correct) == 5:
             # uncertainty is now 0 since an answer has been found so the actual entropy is the previos uncertainty
             guessData.actual_entropy = uncertainty
@@ -99,6 +102,7 @@ def generate_guess(goal: str, possible_ans: set, allowed_guesses: set):
             ansData = judge_guess(guess, ans, False)
             
             ansDataTuple = ansData.to_tuple()
+
             if ansDataTuple in patterns_to_ans:
                 patterns_to_ans[ansDataTuple].add(ans)
             else:
