@@ -118,9 +118,9 @@ def generate_guess_wordle(goal: str, possible_ans: set, allowed_guesses: set):
         # add up all the weighted entropies to get the expected entropy of the guess
         allowed_guesses_to_expected_entropy[guess] = sum(patterns_to_weighted_entropy.values())
     
-    # return the guess with the highest expected entropy
-    best_guess = max(allowed_guesses_to_expected_entropy, key=allowed_guesses_to_expected_entropy.get)
-    return best_guess, allowed_guesses_to_expected_entropy[best_guess], allowed_guesses_to_expected_entropy
+    # return the guess with the highest expected entropy (then by alphabetical order desc if there is a tie)
+    best_guess = max(allowed_guesses_to_expected_entropy.items(), key=lambda item: (item[1], item[0]))
+    return best_guess[0], best_guess[1], allowed_guesses_to_expected_entropy
         
 
 # generate new possible answers from a guess, goal, and previous possible answers

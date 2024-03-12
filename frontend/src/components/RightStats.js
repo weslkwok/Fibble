@@ -6,8 +6,8 @@ export default function RightStats({ list, step, resultFocused }) {
     // if result focused, index is the length of the list - 1
     // else, index is the step - 1
     let index = resultFocused
-        ? list.map((item) => item.guess.trim()).filter((item) => item !== "").length -
-          1
+        ? list.map((item) => item.guess.trim()).filter((item) => item !== "")
+              .length - 1
         : step > 0
         ? step - 1
         : 0;
@@ -42,7 +42,15 @@ export default function RightStats({ list, step, resultFocused }) {
                         ? Object.entries(
                               list[index].guesses_to_expected_entropy
                           )
-                              .sort((a, b) => b[1] - a[1])
+                              .sort((a, b) => {
+                                  // Compare values
+                                  if (a[1] > b[1]) return -1;
+                                  if (a[1] < b[1]) return 1;
+
+                                  // If values are equal, compare keys
+                                  if (a[0] > b[0]) return -1;
+                                  if (a[0] < b[0]) return 1;
+                              })
                               .map(([guess, entropy], index) => (
                                   <div key={index} className="RightStatsRow">
                                       <div
