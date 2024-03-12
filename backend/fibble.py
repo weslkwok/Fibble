@@ -83,23 +83,20 @@ def generate_guesses_fibble(goal: str, fibble: bool = True):
             print(guessData.to_dict())
             return guesses
         
-        # update the possible answers
-        if i != 0:
-            possible_ans = set(guesses_to_expected_entropy.keys())
-        else: # for the first guess we didnt calculate the expected entropy, so we need to update the possible answers manually
-            new_possible_ans = set()
-            # iterate through all possible lie patterns and union their possible answers
-            for pattern in generate_lies(guessData):
-                guessDataLie = GuessData(guessData.guess, pattern[0], pattern[1], pattern[2], None)
-                possible_ans_for_lie = generate_possible_answers(guessDataLie, possible_ans)
-                new_possible_ans = new_possible_ans.union(possible_ans_for_lie)
-            possible_ans = new_possible_ans
+        # update the possible answers by iterating through all possible lie patterns and union their possible answers
+        new_possible_ans = set()
+        for pattern in generate_lies(guessData):
+            guessDataLie = GuessData(guessData.guess, pattern[0], pattern[1], pattern[2], None)
+            possible_ans_for_lie = generate_possible_answers(guessDataLie, possible_ans)
+            new_possible_ans = new_possible_ans.union(possible_ans_for_lie)
+        possible_ans = new_possible_ans
                 
         # update more variables
         actual_entropy = uncertainty - calculate_entropy(1 / len(possible_ans))
+        # print(i, actual_entropy)
         uncertainty -= actual_entropy
-        guesses.append(guessData)
         guessData.actual_entropy = actual_entropy
+        guesses.append(guessData)
         
     return guesses
 
