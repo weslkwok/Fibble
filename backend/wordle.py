@@ -13,11 +13,11 @@ class GuessData:
         self.almost = almost
         self.wrong = wrong
         self.lie = lie
-        self.expected_entropy = None
-        self.actual_entropy = None
+        self.entropy = None
+        self.actual_bits = None
         self.possibilities = None
         self.uncertainty = None
-        self.guesses_to_expected_entropy = None
+        self.guesses_to_entropy = None
     
     def to_dict(self):
         return {
@@ -26,11 +26,11 @@ class GuessData:
             'almost': list(self.almost),
             'wrong': list(self.wrong),
             'lie': self.lie,
-            'expected_entropy': self.expected_entropy,
-            'actual_entropy': self.actual_entropy,
+            'expected_entropy': self.entropy,
+            'actual_entropy': self.actual_bits,
             'possibilities': self.possibilities,
             'uncertainty': self.uncertainty,
-            'guesses_to_expected_entropy': self.guesses_to_expected_entropy
+            'guesses_to_expected_entropy': self.guesses_to_entropy
         }
     
     def to_tuple(self):
@@ -52,28 +52,28 @@ def generate_guesses_wordle(goal: str, fibble: bool = True):
     goal = goal.lower()
     possible_ans = get_word_list(False)
     allowed_guesses = get_word_list(True)
-    uncertainty = calculate_entropy(1 / len(possible_ans))
+    uncertainty = calculate_bits(1 / len(possible_ans))
     
     # generate guesses until goal found or 9 guesses made
     for i in range(9):
         if i == 0:
             # determined by 3Blue1Brown to be the best first guess
-            guess, expected_entropy, guesses_to_expected_entropy = "slane", 0.0, {"slane": 0.0}
+            guess, entropy, guesses_to_entropy = "slane", 0.0, {"slane": 0.0}
         else:
-            guess, expected_entropy, guesses_to_expected_entropy = generate_guess_wordle(goal, possible_ans, allowed_guesses)
+            guess, entropy, guesses_to_entropy = generate_guess_wordle(goal, possible_ans, allowed_guesses)
         
         # find out how the guess actually did
         guessData = judge_guess(guess, goal, fibble)
         
         guessData.uncertainty = round(uncertainty, 2)
-        guessData.expected_entropy = expected_entropy
-        guessData.guesses_to_expected_entropy = guesses_to_expected_entropy
+        guessData.entropy = entropy
+        guessData.guesses_to_entropy = guesses_to_entropy
         guessData.possibilities = len(possible_ans)
         
         # check if the goal has been found
         if len(guessData.correct) == 5:
             # uncertainty is now 0 since an answer has been found so the actual entropy is the previos uncertainty
-            guessData.actual_entropy = uncertainty
+            guessData.actual_bits = uncertainty
             guesses.append(guessData)
             print(guessData.to_dict())
             return guesses
@@ -81,18 +81,16 @@ def generate_guesses_wordle(goal: str, fibble: bool = True):
         # generate new possible answers
         possible_ans = generate_possible_answers(guessData, possible_ans)
         
-        actual_entropy = uncertainty - calculate_entropy(1 / len(possible_ans))
-        uncertainty -= actual_entropy
+        actual_bits = uncertainty - calculate_bits(1 / len(possible_ans))
+        uncertainty -= actual_bits
         guesses.append(guessData)
         
-        guessData.actual_entropy = actual_entropy
-        
-        print(guessData.to_dict())
+        guessData.actual_bits = actual_bits
         
     return guesses
 
 def generate_guess_wordle(goal: str, possible_ans: set, allowed_guesses: set):
-    allowed_guesses_to_expected_entropy = {}
+    allowed_guesses_to_entropy = {}
     # iterate through all possible guesses
     for guess in possible_ans:
         # iterate through all possible answers and add them to their corresponding pattern
@@ -107,20 +105,20 @@ def generate_guess_wordle(goal: str, possible_ans: set, allowed_guesses: set):
             else:
                 patterns_to_ans[ansDataTuple] = set([ans])
         
-        # calculate the weighted entropy of each pattern
-        patterns_to_weighted_entropy = {}
+        # calculate the weighted bits of each pattern
+        patterns_to_weighted_bits = {}
         for pattern, ans in patterns_to_ans.items():
             probablity = len(ans) / len(possible_ans)
-            entropy = calculate_entropy(probablity)
-            # entropy of each pattern is weighted by the probability of that pattern occuring
-            patterns_to_weighted_entropy[pattern] = probablity * entropy
+            bits = calculate_bits(probablity)
+            # bits of each pattern is weighted by the probability of that pattern occuring
+            patterns_to_weighted_bits[pattern] = probablity * bits
         
-        # add up all the weighted entropies to get the expected entropy of the guess
-        allowed_guesses_to_expected_entropy[guess] = sum(patterns_to_weighted_entropy.values())
+        # add up all the weighted bits to get the entropy of the guess
+        allowed_guesses_to_entropy[guess] = sum(patterns_to_weighted_bits.values())
     
-    # return the guess with the highest expected entropy (then by alphabetical order desc if there is a tie)
-    best_guess = max(allowed_guesses_to_expected_entropy.items(), key=lambda item: (item[1], item[0]))
-    return best_guess[0], best_guess[1], allowed_guesses_to_expected_entropy
+    # return the guess with the highest entropy (then by alphabetical order desc if there is a tie)
+    best_guess = max(allowed_guesses_to_entropy.items(), key=lambda item: (item[1], item[0]))
+    return best_guess[0], best_guess[1], allowed_guesses_to_entropy
         
 
 # generate new possible answers from a guess, goal, and previous possible answers
@@ -225,7 +223,7 @@ def map_to_words(words: list):
     
     return word_map
 
-def calculate_entropy(percent: int):
+def calculate_bits(percent: int):
     return safe_log2(1 / percent)
 
 # next 3 functions are directly from 3Blue1Brown's video on wordle

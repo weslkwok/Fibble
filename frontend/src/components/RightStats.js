@@ -38,9 +38,9 @@ export default function RightStats({ list, step, resultFocused }) {
                     {list !== null &&
                     list !== undefined &&
                     list[index] !== undefined &&
-                    list[index].guesses_to_expected_entropy !== undefined
+                    list[index].guesses_to_entropy !== undefined
                         ? Object.entries(
-                              list[index].guesses_to_expected_entropy
+                              list[index].guesses_to_entropy
                           )
                               .sort((a, b) => {
                                   // Compare values

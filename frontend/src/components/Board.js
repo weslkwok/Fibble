@@ -40,8 +40,8 @@ export default function Board({
                     almost: [],
                     wrong: [],
                     lie: null,
-                    expected_entropy: null,
-                    actual_entropy: null,
+                    entropy: null,
+                    actual_bits: null,
                 });
             }
 
@@ -135,14 +135,14 @@ export default function Board({
                                 </div>
                             ))}
                             <div className="Actual Bits Letter">
-                                {word.actual_entropy !== null ? (
-                                    <div>{word.actual_entropy.toFixed(2)}</div>
+                                {word.actual_bits !== null ? (
+                                    <div>{word.actual_bits.toFixed(2)}</div>
                                 ) : null}
                             </div>
                             <div className="Expected Bits Letter">
-                                {word.expected_entropy !== null ? (
+                                {word.entropy !== null ? (
                                     <div>
-                                        {word.expected_entropy.toFixed(2)}
+                                        {word.entropy.toFixed(2)}
                                     </div>
                                 ) : null}
                             </div>
